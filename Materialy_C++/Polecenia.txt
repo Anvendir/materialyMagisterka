@@ -1,0 +1,787 @@
+///konfiguracja sieciowych
+- interfejsy 
+eth0 - komunikacja z laptopem
+eth1 - komunikacja wirtualek miedzy soba
+eth2 - automat(narazie komunikacja z lapkiem)
+
+fedora_bazowy eth0 192.168.254.1/24
+fedora_host1 eth0 192.168.254.10/24
+centos_host1 eth0 192.168.254.20/24
+
+fedora_bazowy eth1 192.168.255.1/24
+fedora host1 eth1 192.168.255.10/24
+centos host1 eth1 192.168.255.20/24
+
+VMnet1 - 192.168.254.126/24
+
+///przejscie do trybu tekstowego z trybu okienkowego
+ctrl+alt+f3
+
+///zmiana trybu domyslnego uruchamiania pomiedzy trybem tekstowym a graficznym
+ln -sf /lib/systemd/system/graphical.target /etc/systemd/system/default.target
+ln -sf /lib/systemd/system/multi-user.target /etc/systemd/system/default.target
+wiki
+http://wiki.fedora.pl/wiki/Poziomy_uruchamiania_systemu
+
+///zeby zmienic klawiature na wlasciwa w trybie tekstowym, tzreba raz uruhcamic w graficznym zmienic w ustawieniach jezyka
+
+///projekt OO
+http://www.makelinux.net/books/lkd2/?u=ch08lev1sec3
+http://stackoverflow.com/questions/20892822/how-to-use-lockdep-feature-in-linux-kernel-for-deadlock-detection
+http://stackoverflow.com/questions/13658645/kernel-dealing-with-deadlocks-in-unix
+http://stackoverflow.com/questions/22170943/how-does-the-linux-kernel-avoid-deadlocks
+https://www.linkedin.com/groups/How-linux-watchdog-works-49301.S.258019802
+
+///sprawdzanie czy port jest otwarty i jaka us³uga na nim dzia³a
+nmap -p 5910 -sV 192.168.254.1
+
+///zmaiana nazw intefrjsów sieciowych
+http://forums.fedoraforum.org/showthread.php?t=289008
+http://ask.xmodulo.com/change-network-interface-names-permanently-linux.html
+/etc/udev/rules.d/75-persistent-net.rules
+
+///wlaczanie serwera ssh
+systemctl start sshd.service
+- na stale
+chkconfig sshd on
+
+///zmiana hostname na sta³e (RHEL >= 7, Fedora)
+hostnamectl set-hostname --static "YOUR-HOSTNAME-HERE"
+
+///zmiania hostname na sta³e (RHEL < 7)
+- w pliku /etc/hosts dodac linijke z adresem ip oraz nazwa hosta np. plik wygalda tak
+<<<<
+[kobak@centos_64-bit_host1 ~]$ cat /etc/hosts
+127.0.0.1       localhost.localdomain localhost
+::1             localhost6.localdomain6 localhost6
+192.168.254.10  Centos_64-bit_host1
+192.168.255.10  Centos_64-bit_host1
+>>>>
+
+- nastepnie reboot systemu
+
+///komendy sterujace us³ugami
+systemctl - jedno polecenie które pe³ni role jak service oraz chkconfig, to powinno byc stosowane, ponizsze dwa sa tylko dla zachowania kompatybilnosci wstecz
+service - steruje us³ug¹ podczas bie¿acego uruchomienia systemu
+chkconfig - steruje czy us³uga ma startowaæ podczas uruchamiania systemu
+
+http://superuser.com/questions/709481/difference-between-service-off-and-service-stop
+http://forums.fedoraforum.org/archive/index.php/t-185405.html
+
+https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/System_Administrators_Guide/sect-Managing_Services_with_systemd-Services.html
+
+///sprawdzanie ile miejsca na dysku
+df -h
+///sprawdzanie rozmiaru folderu 
+du -h
+
+///plik bashrc
+<<<<
+# .bashrc
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+        . /etc/bashrc
+fi
+
+alias ls='ls --color'
+LS_COLORS="rs=0:di=01;94:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=01;31:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:"
+
+LS_COLORS="$LS_COLORS:*.tar=35:*.tgz=35:*.arc=35:*.arj=35:*.taz=35:*.lha=35:*.lz4=35:*.lzh=35:*.lzma=35:*.tlz=35:*.txz=35:*.tzo=35:*.t7z=35:*.zip=35:*.z=35:*.Z=35:*.dz=35:*.gz=35:*.lrz=35:*.lz=35:*.lzo=35:*.xz=35:*.bz2=35:*.bz=35:*.tbz=35:*.tbz2=35:*.tz=35:*.deb=31:*.rpm=90:*.jar=35:*.war=35:*.ear=35:*.sar=35:*.rar=35:*.alz=35:*.ace=35:*.zoo=35:*.cpio=35:*.7z=35:*.rz=35:*.cab=35:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.axv=01;35:*.anx=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=01;36:*.au=01;36:*.flac=01;36:*.mid=01;36:*.midi=01;36:*.mka=01;36:*.mp3=01;36:*.mpc=01;36:*.ogg=01;36:*.ra=01;36:*.wav=01;36:*.axa=01;36:*.oga=01;36:*.spx=01;36:*.xspf=01;36:*.cpp=33:*.hpp=37:*.c=33:*.h=37"
+export LS_COLORS
+
+# Uncomment the following line if you don't like systemctl's auto-paging feature:
+# export SYSTEMD_PAGER=
+>>>>
+- pomocne 
+http://linux-sxs.org/housekeeping/lscolors.html
+
+///komendy sieciowe
+/informacje na temat adresu ip w mojej sieci lokalnej
+nbtscan <ip>
+np: nbtscan 192.168.1.102
+
+/informacje na teamt innych uzytkownikow w sieci lokalnej
+nmap -sP adresSieci/iloscBitowMaskiSieci
+np: nmap -sP 192.168.1.0/24
+
+http://legobokueng.blogspot.com/2011/09/how-to-compile-googletest-with-gcc-and.html
+http://www.ibm.com/developerworks/aix/library/au-googletestingframework.html
+http://www.thebigblob.com/getting-started-with-google-test-on-ubuntu/
+
+///instalacja boosta
+1. Jesli blad z pythonem boostowym
+-> zainstalowac paczke python-devel (zarowno na 64 jak i 32 bity)
+
+2. Kolejny blad
+bzip2-devel.i686                                                                             1.0.6-14.fc21                                                      fedora
+bzip2-devel.x86_64
+
+using mpi ;
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+													VNC Serwer
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+///Instrukcja dla RHEL >= 7 
+
+1. Zainstaluj pakiet vnctiger-server
+yum install tigervnc-server
+
+2. Wybierz port na którym ma pracowac VNCserver, domyœlnie jest to port numer 5900. Wybieramy port z offsetem czyli jeœi
+wybierzemy port 10 to tak naprawde wybieramy 5910. ¯eby po³¹czyæ sie z VNCviewera u¿yjemy 192.168.254.1:10
+
+3. Utwórz plik konfiguracyjny VNCserver dla wybranego portu (przyklad dla portu 5910).
+cp /lib/systemd/system/vncserver@.service /etc/systemd/system/vncserver@:10.service
+
+4. Przygotuj plik konfiguracyjny.
+vim /etc/systemd/system/vncserver@:10.service
+
+- zamieñ <user> na nazwe u¿ytkownika na którego bêdziesz siê ³¹czyæ. Poprawny plik konfigurcyjny dla u¿ytkownika kobak
+wygl¹da tak jak poni¿ej:
+<<<<
+[Unit]
+Description=Remote desktop service (VNC)
+After=syslog.target network.target
+
+[Service]
+Type=forking
+# Clean any existing files in /tmp/.X11-unix environment
+ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill %i > /dev/null 2>&1 || :'
+ExecStart=/sbin/runuser -l kobak -c "/usr/bin/vncserver %i"
+PIDFile=/home/kobak/.vnc/%H%i.pid
+ExecStop=/bin/sh -c '/usr/bin/vncserver -kill %i > /dev/null 2>&1 || :'
+
+[Install]
+WantedBy=multi-user.target
+>>>>
+
+5. Ustaw has³o dla VNCuser (powinienes byc zalogowany jako kobak)
+vncpasswd
+Password:
+Verify:
+
+6. Sprawdz czy w lokalizacji /home/kobak/.vnc/ istnieje plik has³a.
+ls -l /home/kobak/.vnc/
+
+7. Wystartuj us³uge vncserver@:10
+systemctl start vncserver@:10.service
+
+8. W³¹cz us³ugê vncserver@:10 service (start razem z systemem)
+systemctl enable vncserver@:10.service
+
+9. SprawdŸ czy us³uga vncserver@:10 jest aktywna oraz czy jest w³¹czona.
+systemctl is-active vncserver@:10.service
+systemctl is-enabled vncserver@:10.service
+
+10. Po³¹cz sie za pomoc¹ VNCviewer
+192.168.254.1:10
+
+11. Zmiana rozdzielcozœci w VNCviewer, w advanced.
+
+Dodatkowe informacje:
+https://stufs4u.wordpress.com/2014/02/25/install-and-configure-vnc-server-in-fedora-20/
+
+///Instruction for RHEL >= 7 
+1. Zainstaluj pakiet vnctiger-server
+yum install tigervnc-server
+
+2. Ustaw has³o dla VNCuser (powinienes byc zalogowany jako kobak)
+vncpasswd
+Password:
+Verify:
+
+3. Utwórz plik konfiguracyjny VNC serwera - /etc/sysconfig/vncservers
+touch /etc/sysconfig/vncservers
+
+4. Edytuj plik konifguracyjny serwera VNC /etc/sysconfig/vncservers
+vim /etc/sysconfig/vncservers
+
+- pierwsza liczba okreœla numer portu po offsecie (domyœlny port VNCserwera to 5900 jesli wpiszemy 10 to ³¹czymy
+sie po porcie 5910), oraz u¿ytkownika na ktorego sie logujemy za pomoc¹ VNCviewera
+- druga linia okresla rozdzielczoœæ ekranu
+- plik powinien wygl¹dac jak poni¿ej
+
+<<<<
+VNCSERVERS="10:kobak"
+VNCSERVERARGS[10]="-geometry 1366x768"
+>>>>
+
+5. Dodaj port na którym bêdzie siê ³¹czyæ VNCviewer do regu³ zapory sieciowej.
+iptables -I INPUT -m state --state NEW -p tcp --destination-port 5910 -j ACCEPT
+service iptables save
+
+6. Start serwera vnc
+service vncserver start
+
+7. W³¹cz us³ugê VNC serwer (start razem z systemem)
+chkconfig vncserver on
+
+8. SprawdŸ czy us³uga vncserver jest aktywna oraz czy jest w³¹czona.
+service vncserver status
+chkconfig --list vncserver 
+
+9. Po³¹cz siê za pomoca VNCviewera
+192.168.254.10:10
+
+Dodatkowe infromacje:
+http://www.dell.com/support/article/us/en/19/SLN283098/EN
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+													NFS Serwer i Klient
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+///Konfiguracja serwera
+/Za³o¿enia
+- klientem bedzie host 192.168.255.20/24
+
+1. Zainstaluj paczki nfs-utils oraz rpcbind
+yum install nfs-utils
+yum install rpcbind
+
+2. W³¹cz us³guge rpcbind (start z systemem)
+chkconfig rpcbind on
+chkconfig nfs on
+
+3. Nadaj na katalog który bêdziesz udostepniac pe³ne uprawniena(w tym przypadku katalog /home/kobak/nfs)
+chmod 777 /home/kobak/nfs
+
+4. Przygotuj plik /etc/exports, exportowany katalog to /home/kobak/nfs
+/home/kobak/nfs 192.168.255.20/24(rw,sync,no_root_squash)
+
+5. W³¹cz us³uge rpcbind
+service rpcbind start
+
+6. W³¹cz us³ugê nfs serwer
+service nfs start
+
+- mo¿liwe problemy
+/jeœli nie mo¿na nawi¹zaæ po³¹czenia mo¿na spróbowac wy³¹czyc firewall po stronie serwera i klienta
+
+/wy³¹cz us³uge firewall
+service firewalld stop
+
+///Konfiguracja klienta
+/Za³o¿enia
+- serwerem jest host 192.168.255.1/24
+- udostepniana hierarchia katalogów na serwerze to /home/kobak/nfs
+- wy³¹czony firewald po stronie serwer
+
+1. Zainstaluj paczki nfs-utils oraz rpcbind
+yum install nfs-utils
+yum install rpcbind
+
+2. W³¹cz us³guge rpcbind (start z systemem)
+chkconfig rpcbind on
+
+3. Wystartuj us³uge rpcbind
+service rpcbind start
+
+4. Stwórz katalog w których chcesz zamontowac dane z nfsa
+cd mnt
+mkdir test
+
+5. Zamontuj hierarchie katalogów: sk³adnia
+mount host:/path/do/udostepninej/hierarchi/ /gdzie/chce/zamontowac
+mount 192.168.255.1:/nfsServer /mnt/test/
+
+///Automatyczne montowanie przy starcie systemu
+1. Dodaj do pliku fstab linijke
+<<<<
+192.168.255.1:/home/kobak/nfs                    /mnt/test/  nfs4    rw              0 0
+>>>>
+
+2. W przypadku gdy system klient sta³ wczeœniej niz serwer nfs, mo¿na zamontowac wszsytkie katalogi z fstab za pomoc¹
+mount -a 
+
+/ca³y plik fstab wyglada tak
+<<<<
+/dev/mapper/fedora-root                          /           ext4    defaults        1 1
+UUID=c1039d35-bfa0-43f7-8457-65b5d29b22aa        /boot       ext4    defaults        1 2
+/dev/mapper/fedora-swap                          swap        swap    defaults        0 0
+192.168.255.1:/home/kobak/nfs                    /mnt/test/  nfs4    rw              0 0
+>>>>
+
+///Mo¿liwe problemy
+/jeœli nie mo¿na nawi¹zaæ po³¹czenia mo¿na spróbowac wy³¹czyc firewall po stronie serwera i klienta
+
+/wy³¹cz us³uge firewall
+service firewalld stop
+
+///Dodatkowe materia³y
+http://computernetworkingnotes.com/network-administration/how-to-configure-nfs-server-in-rhel-6.html
+https://www.centos.org/docs/5/html/Deployment_Guide-en-US/s1-nfs-server-config-exports.html
+
+/ksiazka Redhat rozdzial 22
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+///DHCP i PXE (tftp)
+https://alteeve.ca/w/DHCP_on_an_RPM-based_OS
+https://alteeve.ca/w/Setting_Up_a_PXE_Server_on_an_RPM-based_OS
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+													SAMBA Serwer oraz klient na Linux i Windows
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+///Serwer Linux
+
+1. Instalacja pakietów samba, samba-common oraz samba-winbind
+yum install samba
+yum install samba-common
+yum install samba-winbind
+
+2. W³¹czenie us³ug smbd, nmbd oraz winbindd.
+service smb start
+service nmb start
+service winbind start
+
+/sprawdzenie statusu
+service smb status
+service nmb status
+service winbind status
+
+3. Aktywowanie startowania us³ug przy starcie systemu
+chkconfig smb on
+chkconfig nmb on
+chkconfig winbind on
+
+4. Wy³¹czenie firewalla na serwerze
+service firewald stop
+
+5. W³¹czanie udostepniana katalogu domowego
+setsebool -P samba_enable_home_dirs on
+
+6. Stworzenie u¿ytkownika samba (nazwa u¿ytkownika samba1)
+
+	6.1 Tworzenie u¿ytkownika w systemie.
+	useradd samba1
+	
+	6.2 Ustawienie has³a dla nowego u¿utkownika (haslo samba1)
+	passwd samba1
+	
+	6.3 Dodaj u¿ytkownika do grona u¿ytkowników samby
+	smbpasswd -a samba1
+	has³o samba1
+
+7. Edytuj plik /etc/samba/smb.conf
+vim /etc/samba/smb.conf
+
+	7.1 Ustaw workgroup na MYGROUP
+	workgroup=MYGROUP
+
+/ponizej jak powinna wygaldac konfiguracja (tylko elementy aktywne)
+<<<<
+[global]
+        workgroup = MYGROUP
+        server string = Samba Server Version %v
+        log file = /var/log/samba/log.%m
+        max log size = 50
+        security = user
+        passdb backend = tdbsam
+        load printers = yes
+        cups options = raw	
+homes]
+        comment = Home Directories
+        browseable = no
+        writable = yes
+[printers]
+        comment = All Printers
+        path = /var/spool/samba
+        browseable = no
+        guest ok = no
+        writable = no
+        printable = yes
+
+>>>>
+
+	7.2. Restart servisu samba
+	service smb restart
+
+8. Wykonaj komende testparm
+tesparm
+
+/wynik powinien wygladac jak
+
+<<<<
+[root@FedoraX kobak]# testparm
+Load smb config files from /etc/samba/smb.conf
+rlimit_max: increasing rlimit_max (1024) to minimum Windows limit (16384)
+Processing section "[homes]"
+Processing section "[printers]"
+Processing section "[sharedata]"
+Loaded services file OK.
+Server role: ROLE_STANDALONE
+Press enter to see a dump of your service definitions
+
+[global]
+        workgroup = MYGROUP
+        server string = Samba Server Version %v
+        log file = /var/log/samba/log.%m
+        max log size = 50
+        idmap config * : backend = tdb
+        cups options = raw
+
+[homes]
+        comment = Home Directories
+        read only = No
+        browseable = No
+
+[printers]
+        comment = All Printers
+        path = /var/spool/samba
+        printable = Yes
+        print ok = Yes
+        browseable = No
+>>>>
+
+9. Wylaczyæ SElinux
+/dodatkowy opis odnosnie wylaczania SELinix
+http://docs.fedoraproject.org/en-US/Fedora/11/html/Security-Enhanced_Linux/sect-Security-Enhanced_Linux-Enabling_and_Disabling_SELinux-Disabling_SELinux.html#
+
+9.1. W pliku /etc/selinux/config zmieniæ SELINUX na disabled.
+SELINUX=disabled
+
+Poprawny plik zamieszczono poni¿ej.
+
+<<<<
+# This file controls the state of SELinux on the system.
+# SELINUX= can take one of these three values:
+#       enforcing - SELinux security policy is enforced.
+#       permissive - SELinux prints warnings instead of enforcing.
+#       disabled - No SELinux policy is loaded.
+SELINUX=disabled
+# SELINUXTYPE= can take one of these two values:
+#       targeted - Targeted processes are protected,
+#       mls - Multi Level Security protection.
+SELINUXTYPE=targeted
+>>>>
+
+9.2. Restart systemu linux
+reboot
+
+9.3. Weryfikacja czy rzeczywiscie SELinux jest wylaczony
+getenforce
+
+(powinien zwróciæ disabled)
+
+10. Restart servisu samba
+service smb restart
+
+//na tym etapie na klientach powinien byæ widoczny katalog domowy u¿ytkownika samba1
+- na kliencie linux mo¿na spróbowac wyœwietliæ dostepne zasoby do zamontowania
+smbclient -L 192.168.254.1 -U samba1
+pass: samba1
+- na kliencie windows7 w moiom komputerze -> sieæ -> Fedora32
+
+//Dodatkowe serwer
+/usuwanie uzytkownika z samby (przyklad uzytkownika samba2)
+smbpasswd -x <userName>
+smbpasswd -x samba2
+
+//Dodwanie udzia³ow do samby
+1. Utwórz katalog który chcesz udostepnic
+mkdir /sharedata
+
+2. Nadaj mu "pe³ne" uprawnienia.
+chmod 777 /sharedata
+
+3. Konfiguracja zmiennej SELINUX
+chcon -R -t samba_share_t /sharedata
+
+4. Dodaj udzia³ do pliku /etc/samba/smb.conf
+
+<<<<
+# Common location for people to share files
+[sharedata] 
+		comment = common location file sharing
+		path = /sharedata  
+		read only = no
+		public = yes
+>>>>
+
+5. Restart servisu samba
+service smb restart
+
+6. Wykonaj testparm
+testparm
+
+/wynik powinien wygladac jak
+<<<<
+[root@FedoraX kobak]# testparm
+Load smb config files from /etc/samba/smb.conf
+rlimit_max: increasing rlimit_max (1024) to minimum Windows limit (16384)
+Processing section "[homes]"
+Processing section "[printers]"
+Processing section "[sharedata]"
+Loaded services file OK.
+Server role: ROLE_STANDALONE
+Press enter to see a dump of your service definitions
+
+[global]
+        workgroup = MYGROUP
+        server string = Samba Server Version %v
+        log file = /var/log/samba/log.%m
+        max log size = 50
+        idmap config * : backend = tdb
+        cups options = raw
+
+[homes]
+        comment = Home Directories
+        read only = No
+        browseable = No
+
+[printers]
+        comment = All Printers
+        path = /var/spool/samba
+        printable = Yes
+        print ok = Yes
+        browseable = No
+
+[sharedata]
+        comment = common location file sharing
+        path = /sharedata
+        read only = No
+        guest ok = Yes
+>>>>
+
+7. Sprawdz dodatkowy zasob na win7 oraz linux podobnie jak dla katalogu domowego w powyzszej czesci.
+
+///W³¹czanie serwera po konfiguracji, nale¿y jedynie wy³¹czyæ firewall na serwerze
+service firewalld stop
+
+///Problemy Serwer
+1. Nie podlacz sie do udzia³ów
+-> sprawdz czy hostname serwera nie zawiera '_', poprawny hostname moze sie skladaz z liter, cyfr oraz '-'
+-> zmien hostname i zrestartuj komputer serwera
+
+///Klient Linux (192.168.254.20)
+1. Instalacja pakietów samba-client, samba-common 
+yum install samba-client
+yum install samba-common
+
+2. Sprawdzenie po³¹czenia z serwerem Samba
+ping 192.168.254.20
+
+3. Wylistuj wyksportowane udzia³y serwera Samba (zak³¹damy ¿e na serwerze jest zdefiniowany uzytkownik samby o nazwie samba1)
+smbclient -L 192.168.254.1 -U samba1
+pass: samba1
+
+output powinien wygladaæ jak poni¿ej (mo¿liwe, ¿e bêdize koniecznoœæ dwukrotnego wykonania powy¿szej komendy)
+
+<<<<
+[root@Fedora_32-bit_host1 kobak]# smbclient -L 192.168.254.1 -U samba1
+Enter samba1's password:
+Domain=[MYGROUP] OS=[Unix] Server=[Samba 4.1.17]
+
+        Sharename       Type      Comment
+        ---------       ----      -------
+        sharedata       Disk      common location file sharing
+        IPC$            IPC       IPC Service (Samba Server Version 4.1.17)
+        samba1          Disk      Home Directories
+Domain=[MYGROUP] OS=[Unix] Server=[Samba 4.1.17]
+
+        Server               Comment
+        ---------            -------
+        FEDORA_64-BIT_B      Samba Server Version 4.1.17
+        RAFAL-KOMPUTER
+
+        Workgroup            Master
+        ---------            -------
+        MYGROUP              RAFAL-KOMPUTER
+>>>>
+
+4. Mo¿liwe jest korzystanie z udzia³ów, itd, ja dochodze do tego momentu w celu weryfikacji czy serwer samba jest 
+skonfigurowany poprawnie. Do wspoldzielenia hierarchi kotalogów z innymi systemammi linux lepiej uzyc NFSa.
+
+///Klient Windows (192.168.254.126)
+1. Wylaczona zapora sieciowa.
+
+2. Konfiguracja us³ug.
+Panel Sterowania -> Narzêdzia administracyjne -> Zasady zabezpieczeñ lokalnych -> 
+
+* Zabezpieczenia Sieci:minimalne zabezpieczenie sesji dla klientów opartych na NTLM SSP 
+/odznaczyæ opcjê: Wymagaj szyfrowa­nia 128-bitowego
+
+*Zabezpieczenia Sieci:minimalne zabezpieczenie sesji dla serwerów opartych na NTLM SSP
+/odznaczyæ opcjê: Wymagaj szyfrowa­nia 128-bitowego
+
+*Zabezpieczenia Sieci: poziom uwierzytelniania LAN Manager
+/Wyœlij LM i NTLM - uzyj zabezpieczeñ sesji NTLMv2 w przypadku negocjaowania
+
+*Klient siecii Microsoft:wyœlij nieszyforwane has³o w celu nawi¹zania po³¹czenia z innymi serwerami SMB
+/w³¹czony
+
+3. Zmiana grupy roboczne na taka jaka jest ustawiona w pliku /etc/samba/smb.conf na serwerze
+PPM Moj komputer -> W³aœciwoœci -> Zmieñ ustawienia -> Zmieñ -> Grupa Robocza
+
+MYGROUP
+
+4. Restart systemu Windows
+
+5. Mapowanie zasobu
+moj komputer -> siec -> fedora1 -> (podajemy has³o dla u¿ytkownika samba)
+prawy na uiza³ -> mapuj dysk sieciowy
+
+
+///Samba artyku³y
+http://wasil.org/samba-i-windows-7
+http://superuser.com/questions/115337/windows-7-connecting-to-samba-shares
+http://computernetworkingnotes.com/network-administration/how-to-configure-samba-on-rhel-6.html
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+													SVN Serwer oraz klient
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+///Konifguracja serwera (protokó³ svn)
+1. Zainstaluj subversion oraz serwer apache
+yum install subversion
+yum install mod_dav_svn
+
+2. Utworzyæ katalogi dla svn, repozytoriów, szablonów etc.
+mkdir /svn
+mkdir /svn/repos
+mkdir /svn/users
+mkdir /svn/permissions
+mkdir -p /svn/templates/{trunk,branches,tags}
+
+3. Nadac uprawnienia do katalogu svn dla uzytkownika apache
+chown -R apache.apache /svn
+
+4. Stworz repozytrium - testowe
+svnadmin create /svn/repos/testowe
+
+5. Edytuj plik konfiguracyjny dla repozytorium testowy
+vim /svn/repos/testowy/conf/svnserve.conf
+ 5.1
+ annon-access -> okresla dostep dla nieznanych uzytkowników (ustawiony na brak dostepu)
+ password-db -> okresla lokalizacje pliku z usytkownikami svn oraz haslami do nich, sciezka bezwzgledna lub wzgledna wzgledem
+				folderu /svn/repos/testowy/conf
+ realm -> nazwa krolestwa repozytoeium
+ auth-access -> okreœla dostep na autoryzowanych uzytkownikow
+
+ 5.2. Znajdz i wyedytuj ponizsze opcje w pliku wedlug wzoru ponizej
+<<<<
+anon-access = none
+password-db = passwdfile
+realm = Moje repozytorium SVN
+auth-access = write
+>>>>
+
+6. Dodaj do pliku passwdfile uzytkowników svn i ich hasla, plik uzupelnij wedlug wzoru 
+<<<<
+[users]
+username = password
+>>>>
+
+ 6.1 Utworz uzytkownika user5 o hasle user5
+<<<<
+[users]
+user5 = user5
+>>>>
+
+7. Wystartuj svn server (protokó³ svn)
+svnserve -d
+
+8. Zaimportuj szablony do swojego repozytorium svn (uzytkownik svn user5)
+svn import -m 'Initial imports' /svn/templates svn://localhost/svn/repos/testowe
+
+9. Wykonaj testowy checkout po protokole svn (uzytkownik svn user5)
+svn checkout svn://localhost/svn/repos/testowe/trunk wcopy1
+
+///Konifguracja serwera (protokó³ http)
+1. Zainstaluj subversion oraz serwer apache
+yum install subversion
+yum install mod_dav_svn
+
+2. W³aczyæ usluge serwera apache do startu wraz z systemem.
+chkconfig httpd on
+
+3. Utworzyæ katalogi dla svn, repozytoriów, szablonów etc.
+mkdir /svn
+mkdir /svn/repos
+mkdir /svn/users
+mkdir -p /svn/templates/{trunk,branches,tags}
+
+4. Stworz repozytrium - googleTest
+svnadmin create /svn/repos/googleTest
+
+5. Zmieniæ w³aœciciela nowoutworzonego repozytorium na apache, tak samo grupe
+chown -R apache.apache /svn/repos/googleTest
+
+6. Wyedytowac plik konifguracyjny repozytrium /sv/repos/googleTest/conf/svnserve.conf
+/dodac w odpowiednich sekscjach linijki
+<<<<
+anon-access = none
+auth-db = authz
+>>>> 
+
+7. Dodac uzytkownikow svn, w tym przypadku svn1 i zapisac konfiguracje  pliku /svn/users/svnpass
+htpasswd -cm /svn/users/svnpass svn1
+password: svn1
+
+8. Wyedytowac plik konfiguracyjny dla serwera http svn, lokolizacja /etc/httpd/conf.d/subversion.conf
+vim /etc/httpd/conf.d/subversion.conf
+
+/plik powinien wygladac jak ponizej
+<<<<
+<Location /svn>
+   DAV svn
+   SVNParentPath /svn/repos
+
+   # Limit write permission to list of valid users.
+   <LimitExcept GET PROPFIND OPTIONS REPORT>
+      # Require SSL connection for password protection.
+      # SSLRequireSSL
+
+      AuthType Basic
+      AuthName "Subversion repositories"
+      # AuthUserFile /etc/svn-auth-users
+      AuthUserFile /svn/users/svnpass
+      Require valid-user
+   </LimitExcept>
+</Location>
+>>>>
+
+9. Zrestartowac us³uge httpd
+service httpd restart
+
+10. Zaimportowac szablony katalogow z /svn/templates
+svn import -m 'Initial import' /svn/templates/ http://localhost/svn/googleTest
+
+11. Zrestartowac us³uge httpd
+service httpd restart
+
+12. Zrobienie testowego checkout'a badz sprawdzenie dostepnosci danych z repozytorium poprzez http (przegladarka ww najlepiej poprzez vnc)
+a) testowe repozytorium
+svn checkout http://192.168.255.1/svn/googleTest/trunk wcopy
+b) poprzez http z vnc
+http://192.168.255.1/svn/googleTest
+
+///Konfiguracja klienta
+1. Zainstaluj subversion
+yum install subversion
+
+2. Wykonaj checkout
+svn co <linkDoRepozytorium> <nazwaKopiRoboczej>
+svn co http://192.168.255.1/svnrepos wcopy
+
+///Dodatkowe materia³y
+http://xmodulo.com/how-to-set-up-subversion-svn-server-on-centos-or-fedora.html
+http://svnbook.red-bean.com/
+http://www.if-not-true-then-false.com/2010/install-svn-subversion-server-on-fedora-centos-red-hat-rhel/
+http://www.if-not-true-then-false.com/2012/svn-subversion-backup-and-restore/
+http://svn-ref.assembla.com/subversion-server-guide-linux.html
+http://www.jamison.org/2011/09/13/fixing-the-svn-txn-current-lock-permission-denied-error-in-subversion/
+https://vengatctech.wordpress.com/2008/08/22/installing-svn-on-fedora/
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$

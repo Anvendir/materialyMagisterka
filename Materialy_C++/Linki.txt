@@ -1,0 +1,17 @@
+///glowna strona dicom
+http://dicom.nema.org/
+
+///socha dicom
+http://home.agh.edu.pl/~socha/pmwiki/pmwiki.php/DICOM/DICOM?from=Programowanie.DICOM
+
+///strona osirix-viewer
+http://pixmeo.pixmeo.com/products.html#OsiriXMD
+
+///kod zrodlowy 
+http://www.osirix-viewer.com/Documentation/Guides/Development/index.html
+
+///instalacja mac0sx na vm workstation
+https://www.youtube.com/watch?v=bFPGlnmOUTg
+
+///strone o microDicom
+http://www.microdicom.com/

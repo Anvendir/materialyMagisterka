@@ -1,0 +1,148 @@
+///Budowanie binarek
+Binarke nalezy zbudowac z flaga -g w celu zawarcia infrmacji debugowych
+gcc -g -lstdc++ -o program main.cpp funkcja.cpp
+
+-ltcmalloc HEAPPROFILE=/tmp/netheap ./myprogram
+
+///Przegladanie wyników
+-> ms_print
+-> massif-visualizer
+	* yum install massif-visualizer
+	* yum install kgraphviewer
+	
+http://milianw.de/
+https://projects.kde.org/projects/extragear/sdk/massif-visualizer
+
+///Uruchamianie podstawowe
+valgrind --tool=massif ./program
+
+///opcje massifa
+--massif-out-file=<fileName> -> pozwala określic swoją nazwę pliku
+--stacks=<yes/no> -> pozwala włączyć/wyłączyć profiling stosu
+--time-unit=<i/ms/B> -> pozwala wybrac jednostke czasu, do wyboru
+	* i -> ilość wykonanych instrukcji
+	* ms -> czas w miliskeundach
+	* B -> ilość alokowanej/dealokowanej pamieci
+--max-snapshots=<100..1000> -> maksymalna ilość znapshotów, nie można wiecej jak 1000
+--detailed-freq=<n> -> jak często maja sie pojawiac snapshoy szczegółowe, przy opcji 1, każdy snapshot jest snapshotem szczegółowych
+
+valgrind --tool=massif --stacks=yes --massif-out-file=F --time-unit=B --threshold=0.0 --max-snapshots=1000 --detailed-freq=1  ./programN
+
+//najlepsze efekty dla time, brak powiekszania wykresu w massif-visualizer, generalnie troche do dupy,
+da sie cos uzyskac dla time lub B oraz max ilosci snapshotów, gdzie każdy jest znapshotem szczegółowym i dla --treshold=0.0
+
+///Dodatkowe informacje
+http://valgrind.org/docs/manual/ms-manual.html#ms-manual.not-measured
+
+///heaptrack
+http://milianw.de/blog/heaptrack-a-heap-memory-profiler-for-linux
+nie udało sie zbudowac
+
+
+env HEAPPROFILE=./jeden HEAP_PROFILE_TIME_INTERVAL=1 ./program
+env HEAPPROFILE=./jeden HEAP_PROFILE_ALLOCATION_INTERVAL=1 ./program
+
+
+/usr/bin/cmake -E cmake_link_script CMakeFiles/heaptrack_print.dir/link.txt --verbose=
+
+/bin/c++ -std=c++11 -Wall -Wpedantic -O2 -g -DNDEBUG CMakeFiles/heaptrack_print.dir/heaptrack_print.cpp.o  -o heaptrack_print -rdynamic /usr/local/lib/libboost_system.so /usr/local/lib/libboost_filesystem.so /usr/local/lib/libboost_iostreams.so /usr/local/lib/libboost_program_options.so -Wl,-rpath,/usr/local/lib:
+
+
+/bin/c++ -I /usr/local/include -std=c++11 -Wall -Wpedantic -O2 -g -DNDEBUG CMakeFiles/heaptrack_print.dir/heaptrack_print.cpp.o  /usr/local/lib/libboost_system.a /usr/local/lib/libboost_filesystem.a /usr/local/lib/libboost_iostreams.a /usr/local/lib/libboost_program_options.a /usr/local/lib/libz.a /home/kobak/boost_1_55_0/libs/iostreams/src/gzip.cpp /home/kobak/boost_1_55_0/libs/iostreams/src/zlib.cpp -o heaptrack_print
+
+/bin/c++ -I /home/kobak/boost_1_55_0/libs/iostreams/src  -std=c++11 -Wall -Wpedantic -O2 -g -DNDEBUG CMakeFiles/heaptrack_print.dir/heaptrack_print.cpp.o  /usr/local/lib/libboost_system.a /usr/local/lib/libboost_filesystem.a /usr/local/lib/libboost_iostreams.a /usr/local/lib/libboost_program_options.a /usr/local/lib/libz.a /home/kobak/boost_1_55_0/libs/iostreams/src/gzip.cpp /home/kobak/boost_1_55_0/libs/iostreams/src/zlib.cpp -o heaptrack_print  -lz
+/bin/c++ -I /home/kobak/boost_1_55_0/libs/iostreams/src  -std=c++11 -Wall -Wpedantic -O2 -g -DNDEBUG CMakeFiles/heaptrack_print.dir/heaptrack_print.cpp.o  /usr/local/lib/libboost_system.a /usr/local/lib/libboost_filesystem.a /usr/local/lib/libboost_iostreams.a /usr/local/lib/libboost_program_options.a /usr/local/lib/libz.a /home/kobak/boost_1_55_0/libs/iostreams/src/gzip.cpp /home/kobak/boost_1_55_0/libs/iostreams/src/zlib.cpp -o heaptrack_print -L/home/kobak/zlib-1.2.8/libz.so.1.2.8 -lz
+
+
+///Problem podczas linkowania heaptrack_print
+Linking CXX executable heaptrack_print
+
+-> wielokrotne
+<<<<
+/usr/local/include/boost/iostreams/filter/gzip.hpp:165: undefined reference to `boost::iostreams::zlib::okay'
+>>>>
+oraz
+<<<<
+/usr/local/include/boost/iostreams/filter/zlib.hpp:122: undefined reference to `boost::iostreams::zlib::default_compression'
+>>>>
+
+
+///Rozwiazanie
+w pliku CMakeFiles/heaptrack_print.dir/link.txt (powstałego po poprowanym wykonaniu cmkae w katalogu builds)
+<<<<
+/home/kobak/heaptrack/build/CMakeFiles/heaptrack_print.dir/link.txt
+>>>>
+
+dodac do skłądników:
+<<<<
+/home/kobak/boost_1_55_0/libs/iostreams/src/zlib.cpp
+>>>>
+oraz 
+<<<<
+/home/kobak/boost_1_55_0/libs/iostreams/src/gzip.cpp
+>>>>
+i linkowanie biblioteki zlib
+<<<<
+-lz
+>>>>
+
+cały plik powinien wygalac:
+<<<<
+[kobak@Fedora64-bitBazowy heaptrack_print.dir]$ cat link.txt
+/usr/bin/c++  -lz  -std=c++11 -Wall -Wpedantic -O2 -g -DNDEBUG    CMakeFiles/heaptrack_print.dir/heaptrack_print.cpp.o /home/kobak/boost_1_55_0/libs/iostreams/src/gzip.cpp /home/kobak/boost_1_55_0/libs/iostreams/src/zlib.cpp  -o heaptrack_print -rdynamic /usr/local/lib/libboost_system.so /usr/local/lib/libboost_filesystem.so /usr/local/lib/libboost_iostreams.so /usr/local/lib/libboost_program_options.so -Wl,-rpath,/usr/local/lib:
+>>>>
+
+
+///moj pomysł
+
+-> wersja valgrinda która rejestruje wszsytkie snapshoty	OK
+-> parsowanie pliku wyjsciowego tak aby eleminowac powtarzajace sie snapshoty
+-> wybrana jednostka czasu: i ( ilosc instrukcji), OK //jesli wybierze sie czas, czesc snapshotow wykananych jest w tym samym czasie co zaciemnia obraz
+-> dla jednostki czasu i, wyniki sa w pełni powtarzalne OK
+-> do massif visualizer
+	* dodanie opcji powiekszania wykresu (excell)
+	* zakres wykresu od pierwszego snapshota niezerowego (excell)
+	* możliwość wlaczania, wylaczania poszczególnych alokacji (excel?)
+	* zmiana sposobu rysowania wykresu(proba z tabelka excell) (excell wykres kolumnowy, szerokosc przerwy 0)
+-> dodanie sumowanie allokowania pamieci dla funkcji dzieci
+
+
+gcc -g -lstdc++ -o programDuzy main.cpp
+/opt/valgrindNoSnapLimit/bin/valgrind --tool=massif --time-unit=i --detailed-freq=1 --threshold=0.0 --max-snapshots=1000000 --massif-out-file=massif.mojMassifSurowy.out ./program
+
+///Pierwsza wersja programów
+1. Wstep
+Całość skłąda sie z edytowanego i przebudowaneog valgrinda(konkretnie massifa) oraz
+dwóch skryptów parser.sh oraz creator.sh
+
+2. Najpierw należy wygenerować log z massifa
+<<<<
+/opt/valgrindNoSnapLimit/bin/valgrind --tool=massif --time-unit=i --detailed-freq=1 --threshold=0.0 --max-snapshots=1000000 --massif-out-file=massif.mojMassifSurowy.out ./program
+>>>>
+
+3. Póżniej należy przeparsowac plik wyjściowy z massifa (w tym przypadku massif.mojMassifSurowy.out) za pomocą parser.sh
+<<<<
+./parser.sh massif.mojMassifSurowy.out 
+>>>>
+
+-> plik wyjsciowy bedzie mial postac out.parser.<pid>.txt
+-> np. out.parser.22406.txt
+
+-> dodatkowo generowany jest plik z logiem, plik ten ma postac log.parser.<pid>.txt
+-> np. log.parser.22406.txt
+
+4. Następnie należy przygotowąc gotowy plik do excela za pomocą creator.sh (jako argument należy podacplik wyjsciowy z parser.sh)
+<<<<
+./creator out.parser.22406.txt
+>>>>
+
+-> plik wyjsciowy bedzie mial postac out.creator.<pid>.txt
+-> np. out.creator.22550.txt
+
+-> dodatkowo generowany jest plik z logiem, plik ten ma postac log.creator.<pid>.txt
+-> np. out.creator.22550.txt
+
+5. Tak przygotowany plik można wgrac do excella (separator pól to spacja), (wykres kolumnowy, szerokosc przerwy =0)
+
+/////Lokalizacja massifa w mojej wersji
+/sambaServer/wcopy/Massif/MassifTools/creator.sh

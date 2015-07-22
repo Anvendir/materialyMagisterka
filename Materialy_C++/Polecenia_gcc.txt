@@ -1,0 +1,217 @@
+///przydatne strony o kompilacji 
+http://osworld.pl/kompilacja-w-gcc-krok-po-kroku/
+https://www.youtube.com/watch?v=wDKeJ79TBsg
+http://gynvael.coldwind.pl/?id=433
+
+///64 bitowy system a 32 bitowy
+- jesli jest w nazwie i686 to 32 bity
+- jesli w naziwe jest x86_64
+
+///Flagi gcc
+-m32 - tryb 32 bitowy
+-mbig-endian - big endian
+
+///undefined reference to `std::cout'
+- dodac flage -lstdc++ do gcc
+
+///gnu/stubs-32.h: No such file or directory
+- dla RedHat i Fedory potrzebna paczka
+yum install glibc-devel.i686
+yum install gcc-c++.i686
+
+///opcje kompilatora
+https://gcc.gnu.org/onlinedocs/gcc-3.3.6/gcc/i386-and-x86_002d64-Options.html#i386-and-x86_002d64-Options
+
+///budowa i instalacja gcc ze źródeł
+https://gcc.gnu.org/wiki/InstallingGCC
+http://gcc.gnu.org/install/configure.html
+
+///Rozszerzenia plików
+*.c - plik źródłowy jezyka C
+*.cpp - plik źródłowy języka C++
+*.h - plik nagłówkowy języka C
+*.hpp - plik nagłówkowy języka C++
+*.i - plik języka C po działaniu preporcesora (przepreprocesorowany)
+*.ii - plik języka C++ po działaniuj preprocesora
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+											Makefile
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+///opis o makefile
+http://www..com/artykuly/linux/makefile.php
+http://usbdp.org/kursy/Kurs_MAKE/Kurs_MakeFiles.php
+///make - manual
+http://www.gnu.org/software/make/manual/make.pdf
+http://pl.wikibooks.org/wiki/C/Wi%C4%99cej_o_kompilowaniu
+
+///ogólna struktura
+CEL: SKŁADNIKI
+	KOMENDA
+<<<<
+hello: hello.c aux.c
+	gcc hello.c aux.c -o hello
+>>>>
+
+///kaskadowosc reguł
+<<<<	
+hello: hello.o aux.o
+	gcc hello.o aux.o -o hello
+
+hello.o: hello.c
+	gcc -c hello.c -o hello.o
+
+aux.o: aux.c
+	gcc -c aux.c -o aux.o
+>>>>
+	
+///tworzenie katalogów
+$(shell   mkdir -p <nazwakatalogu>)
+$(shell   mkdir -p katalogX)
+
+
+///valgrind oraz callgrind
+valgrind --tool=callgrind  --fn-skip='*cxx*' --fn-skip='*std*' ./program
+valgrind --tool=callgrind ./program
+
+gcc program.cpp -o program -lstdc++
+valgrind --tool=callgrind  --fn-skip='*Index*' --fn-skip='*000*' --fn-skip='*malloc*' --fn-skip='*new*' --fn-skip='*free*' --fn-skip='*delete*' --fn-skip='*std*' ./program
+
+///Google Testprogramuj
+gcc -lstdc++ -I ../googleTestSource/gtest-1.7.0/include/ -o programTest funkcja.cpp firstTest.cpp libgtest.a libgtest_main.a -lpthread
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+											Gotowe Makefile
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+///Dla kodu źródłowego
+
+1. Przy dodawaniu nowego pliku do projektu należy:
+-> dodac nazwe pliku obiektowego do zmiennej OBJ
+<<<<
+OBJ = main.o funkcja.o
+>>>>
+-> dodac nową sekcje z regułami, według wzoru
+<<<<
+$(OBJ_DIR)/<nazwaPlikuObiektowego>: <nazwaPlikuŹródłowego> <ewentualnePlikiZzależnosciami>
+        @echo -e "${yellow}Building: ${lightGray} $@ ${noColor}"
+        gcc -c -o $@ $<
+        @echo
+>>>>
+
+2. Cały plik Makefile poniżej
+<<<<
+PROJECT_NAME = $(shell basename $(shell pwd))
+
+#colors for echo
+green=\033[0;32m
+lightGray=\033[0;37m
+yellow=\033[0;33m
+boldWhite=\033[1;97m
+noColor=\033[0;39m
+
+#Definicje zmiennych
+OBJ = main.o funkcja.o
+
+BIN_DIR = ../../binaries
+OBJ_DIR = $(BIN_DIR)/objFiles/$(PROJECT_NAME)
+ALL_OBJ = $(addprefix $(OBJ_DIR)/,$(OBJ))
+
+#Reguły
+
+$(BIN_DIR)/program: $(ALL_OBJ)
+        @echo -e "${yellow}Building: ${boldWhite} $@ ${noColor}"
+        gcc -lstdc++ -o $@ $^
+        @echo
+        @echo -e "${green}Build successful ${noColor}"
+
+$(OBJ_DIR)/main.o: main.cpp funkcja.h
+        @echo -e "${yellow}Building: ${lightGray} $@ ${noColor}"
+        gcc -c -o $@ $<
+        @echo
+
+$(OBJ_DIR)/funkcja.o: funkcja.cpp
+        @echo -e "${yellow}Building: ${lightGray} $@ ${noColor}"
+        gcc -c -o $@ $<
+        @echo
+
+#Tworzenie katalogow wynikowych
+$(shell mkdir -p $(BIN_DIR) $(OBJ_DIR))
+
+#Reguly dodatkowe
+clean:
+        rm -f $(OBJ_DIR)/*.o
+>>>>
+
+///Dla testu jednostkowego
+1. Przy dodawaniu nowego testu do projektu
+-> Podac nazwe projektu źródłowego który ma być testowany do zmiannej PROJECT_NAME
+<<<<
+PROJECT_NAME = 1_pierwszyProgram
+>>>>
+-> dodac nazwe pliku obiektowego zrodla (tego co bedzie testowane) jak i pliku testu do zmiennej OBJ
+<<<<
+OBJ = funkcja.o firstTest.o
+>>>>
+-> dodac odpowiednie sekcje z reguami dla pliki zrodłowego oraz pliku testu
+<<<<
+$(OBJ_DIR)/<obiektPLikuZrodłowego>: $(SRC_DIR)/<plikZrodłowy>
+        @echo -e "${yellow}Building: ${lightGray} $@ ${noColor}"
+        gcc -c -o $@ $<
+        @echo
+
+$(OBJ_DIR)/<plikObiektowyTestu>: <plikZrodowyTestu>
+        @echo -e "${yellow}Building: ${lightGray} $@ ${noColor}"
+        gcc -c -I $(INC_DIR) -o $@ $<
+        @echo
+>>>>
+
+2. Cały plik Makefile
+<<<<
+#Nalezy okreslic nazwe folderu w ktorym jest kod zrodlowy
+PROJECT_NAME = 1_pierwszyProgram
+PROJECT_UT_NAME = $(shell basename $(shell pwd))
+
+#colors for echo
+green=\033[0;32m
+lightGray=\033[0;37m
+yellow=\033[0;33m
+boldWhite=\033[1;97m
+noColor=\033[0;39m
+
+#Definicje zmiennych
+OBJ = funkcja.o firstTest.o
+
+BIN_DIR = ../../binaries
+OBJ_DIR = $(BIN_DIR)/objFiles/$(PROJECT_UT_NAME)
+ALL_OBJ = $(addprefix $(OBJ_DIR)/,$(OBJ))
+
+STATIC_LIB = libgtest.a libgtest_main.a
+STATIC_LIB_DIR = ../staticLibs
+ALL_STATIC_LIBS = $(addprefix $(STATIC_LIB_DIR)/,$(STATIC_LIB))
+
+INC_DIR = ../../googleTestSource/gtest-1.7.0/include
+SRC_DIR = ../../sourceFiles/$(PROJECT_NAME)
+#Reguły
+
+$(BIN_DIR)/programTest: $(ALL_OBJ)
+        @echo -e "${yellow}Building: ${boldWhite} $@ ${noColor}"
+        gcc -lstdc++ -lpthread -o $@ $^ $(ALL_STATIC_LIBS)
+        @echo
+        @echo -e "${green}Build successful ${noColor}"
+
+$(OBJ_DIR)/funkcja.o: $(SRC_DIR)/funkcja.cpp
+        @echo -e "${yellow}Building: ${lightGray} $@ ${noColor}"
+        gcc -c -o $@ $<
+        @echo
+
+$(OBJ_DIR)/firstTest.o: firstTest.cpp
+        @echo -e "${yellow}Building: ${lightGray} $@ ${noColor}"
+        gcc -c -I $(INC_DIR) -o $@ $<
+        @echo
+
+#Tworzenie katalogow wynikowych
+$(shell mkdir -p $(BIN_DIR) $(OBJ_DIR))
+
+#Reguly dodatkowe
+clean:
+        rm -f $(OBJ_DIR)/*.o
+>>>>

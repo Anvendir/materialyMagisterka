@@ -1,0 +1,58 @@
+///Linkowania
+http://www.ibm.com/developerworks/aix/library/au-googletestingframework.html#list1
+
+///budowa testcasu
+g++ -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -pthread -c ${GTEST_DIR}/src/gtest-all.cc
+///libgtest musi byc na koncu  
+g++ -o test -I gtest-1.7.0/include suma_unittest.cpp suma.cpp libgtest.a
+
+./test -uruchomi wszystkie testys
+./test --gtest_filter=SumTest.PositiveNumbers -jeden test
+
+--gtest_repeat=1000  ///wykonuje to samo 1000 razy
+--gtest_break_on_failure ///przerwywa wykonanie po natkinieciu sie na fail, przydatne w polaczeniu z poprzednia opcja
+--gtest_output="xml:<file name>.xml"   ///generuje raport w XMLu
+--gtest_filter=SumTest.*-SumTest.Zero*	///uruchamia wszystkie testy z suity SumTest z wyjatkiem testu SumTest.Zero
+
+
+///wylaczanie wykoanania testu:
+
+dodaj do nazwy DISABLED_ na przyklad:
+
+TEST(DISABLED_SumTest, Zero)
+{
+	EXPECT_EQ(0.0, suma(5, -5)) << "Asertion failes with int input parameters";
+	EXPECT_EQ(0.0, suma(0, 0));
+	EXPECT_EQ(0.0, suma(5.0, -5.0)) << "Asertion failes with double input parameters";
+}
+
+dostaniesz na wyjsciu infrmacje o tym ze masz jakis test wylaczony
+
+$ ./test
+[==========] Running 2 tests from 1 test case.
+[----------] Global test environment set-up.
+[----------] 2 tests from SumTest
+[ RUN      ] SumTest.PositiveNumbers
+[       OK ] SumTest.PositiveNumbers (0 ms)
+[ RUN      ] SumTest.NegativeNumbers
+[       OK ] SumTest.NegativeNumbers (0 ms)
+[----------] 2 tests from SumTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test case ran. (1 ms total)
+[  PASSED  ] 2 tests.
+
+  YOU HAVE 1 DISABLED TEST
+
+
+Zeby wykonac rowniez wylaczone testy, dodaj flage:
+--gtest_also_run_disabled_tests
+
+///Listowanie testow ktore zostana wykonane bez wykonania ich
+--gtest_list_tests
+
+
+g++ -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -isystem ${GMOCK_DIR}/include -I${GMOCK_DIR} -pthread -c ${GTEST_DIR}/src/gtest-all.cc
+g++ -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -isystem ${GMOCK_DIR}/include -I${GMOCK_DIR} -pthread -c ${GMOCK_DIR}/src/gmock-all.cc
+
+g++ -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include -pthread path/to/your_test.cc libgmock.a -o your_test
