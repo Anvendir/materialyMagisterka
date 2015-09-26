@@ -15,3 +15,8 @@ https://www.youtube.com/watch?v=bFPGlnmOUTg
 
 ///strone o microDicom
 http://www.microdicom.com/
+
+///programowanie sieciowe linki
+http://cpp0x.pl/kursy/Kurs-WinSock-C++/Wywolania-systemowe/275
+http://beej.us/guide/bgnet/output/html/multipage/clientserver.html#figure2
+http://beej.us/guide/bgnet/output/html/multipage/index.html
